@@ -1,13 +1,91 @@
 # React Profiler Optimize Monorepo
 
-Monorepo for automated React rendering performance profiling and optimization workflows.
+Monorepo for skill-driven, agentic React performance profiling and optimization.
 
-This repository packages:
+## Start Here: Skill + Agent Profiling Workflow
 
-- Two profiling labs (Next.js and Expo Web) with intentional footguns.
-- A production-oriented MCP/CLI automation toolkit for React DevTools profiling export and analysis.
-- A canonical, in-repo `react-profiler-optimize` Codex skill.
-- An optional `vendor/react` submodule for upstream React DevTools provenance and re-sync workflows.
+This is the primary workflow for this repository.
+
+### 1) Prepare environment
+
+```bash
+git clone https://github.com/avoc-ado/react-profiler-optimize.git
+cd react-profiler-optimize
+git submodule update --init --recursive
+```
+
+Install dependencies for the app you want to profile and the MCP tool:
+
+```bash
+cd apps/next-react-profiler-lab && yarn install
+cd ../../tools/react-profiler-mcp && yarn install
+```
+
+### 2) Run target app
+
+Next lab:
+
+```bash
+cd apps/next-react-profiler-lab
+yarn dev
+```
+
+Expo web lab:
+
+```bash
+cd apps/expo-react-profiler-lab
+npm install
+npm run web
+```
+
+### 3) Run profiler MCP server (tool side)
+
+In another terminal:
+
+```bash
+cd tools/react-profiler-mcp
+node packages/mcp-server/index.js
+```
+
+### 4) Use the packaged skill in your coding agent
+
+Canonical skill lives in:
+
+- `skills/react-profiler-optimize/SKILL.md`
+- `skills/react-profiler-optimize/references/*`
+- `skills/react-profiler-optimize/scripts/*`
+
+Use this prompt pattern in your agent:
+
+```text
+Use $react-profiler-optimize to profile apps/next-react-profiler-lab.
+Capture baseline, analyze hotspots, apply a targeted fix, re-profile,
+and produce before/after deltas.
+```
+
+### 5) Expected profiling loop
+
+1. Capture baseline profile (`record_react_devtools_profile` or CLI `record-react-devtools`).
+2. Analyze baseline (`analyze_profile` / CLI `analyze`).
+3. Apply one targeted fix class.
+4. Capture optimized profile with the same deterministic steps.
+5. Compare reports (`compare_profile_reports` or `compare_profiles_end_to_end`).
+6. Summarize measurable deltas.
+
+### 6) CLI fallback workflow (without MCP client wiring)
+
+```bash
+cd tools/react-profiler-mcp
+
+node packages/cli/bin/react-profiler-cli.js record-react-devtools \
+  --url http://localhost:3000 \
+  --out /tmp/baseline.json
+
+node packages/cli/bin/react-profiler-cli.js analyze \
+  --input /tmp/baseline.json \
+  --out /tmp/baseline-report.json \
+  --source-root ../../apps/next-react-profiler-lab
+```
 
 ## Repository Layout
 
@@ -24,80 +102,20 @@ This repository packages:
     └── react/                # git submodule -> facebook/react
 ```
 
-## Why This Layout
+## What Each Area Is For
 
-- `apps/*` stays focused on runnable profiling targets.
-- `tools/react-profiler-mcp` stays focused on automation (record/analyze/compare).
-- `skills/react-profiler-optimize` is the canonical skill source to package and version with this repo.
-- `vendor/react` is optional for maintainers who need upstream parity checks; normal users do not need to touch it.
+- `apps/*`: profiling targets with intentional perf footguns.
+- `tools/react-profiler-mcp`: recorder + analysis MCP server and CLI.
+- `skills/react-profiler-optimize`: canonical skill to package/version with this repo.
+- `vendor/react`: optional upstream checkout for parity/resync maintenance.
 
-## Prerequisites
+## Skill Packaging Notes
 
-- Node.js 20+
-- `yarn` and/or `npm`
-- Git 2.40+
-- GitHub CLI (`gh`) authenticated
-- Chrome/Chromium available for automated profiling capture (Puppeteer)
+`react-profiler-mcp` is configured to resolve skill roots in this order:
 
-## Clone
-
-```bash
-git clone https://github.com/avoc-ado/react-profiler-optimize.git
-cd react-profiler-optimize
-git submodule update --init --recursive
-```
-
-## Quick Start
-
-### 1) Run a Lab App
-
-Next.js lab:
-
-```bash
-cd apps/next-react-profiler-lab
-yarn install
-yarn dev
-```
-
-Expo web lab:
-
-```bash
-cd apps/expo-react-profiler-lab
-npm install
-npm run web
-```
-
-### 2) Run MCP/CLI Tooling
-
-```bash
-cd tools/react-profiler-mcp
-yarn install
-node packages/cli/bin/react-profiler-cli.js --help
-```
-
-Example recording + analysis:
-
-```bash
-node packages/cli/bin/react-profiler-cli.js record-react-devtools \
-  --url http://localhost:3000 \
-  --out /tmp/baseline.json
-
-node packages/cli/bin/react-profiler-cli.js analyze \
-  --input /tmp/baseline.json \
-  --out /tmp/baseline-report.json \
-  --source-root ../../apps/next-react-profiler-lab
-```
-
-## Canonical Skill Packaging
-
-Canonical skill source is in-repo:
-
-- `skills/react-profiler-optimize/SKILL.md`
-- `skills/react-profiler-optimize/references/*`
-- `skills/react-profiler-optimize/scripts/*`
-- `skills/react-profiler-optimize/agents/openai.yaml`
-
-`react-profiler-mcp` is configured to prefer this in-repo skill first, with `.skill-edit` and `~/.codex` as fallbacks.
+1. In-repo `skills/react-profiler-optimize` (preferred)
+2. `.skill-edit/react-profiler-optimize` (workspace fallback)
+3. `~/.codex/skills/react-profiler-optimize` (user fallback)
 
 Optional local install for Codex:
 
@@ -114,18 +132,26 @@ Initialize:
 git submodule update --init --recursive
 ```
 
-Update to latest upstream:
+Update:
 
 ```bash
 git submodule update --remote vendor/react
 ```
 
-Current intent:
+Maintainer intent:
 
 - Keep vendored hook parsing logic in `tools/react-profiler-mcp/packages/core/src/vendor/react-devtools-shared/`.
-- Use `vendor/react` to inspect and re-sync upstream changes when needed.
+- Use `vendor/react` for upstream diffing/resync workflows when needed.
+
+## Prerequisites
+
+- Node.js 20+
+- `yarn` and/or `npm`
+- Git 2.40+
+- GitHub CLI (`gh`) authenticated
+- Chrome/Chromium available for automated profiling capture (Puppeteer)
 
 ## Notes
 
 - Generated traces/profiles/reports and local workspace artifacts are ignored at repo root.
-- This repository is intentionally optimized for reproducible perf workflows, not long-term storage of raw trace dumps.
+- This repo is designed for reproducible optimization workflows, not long-term storage of raw trace dumps.
