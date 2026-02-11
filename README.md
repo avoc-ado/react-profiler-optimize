@@ -2,9 +2,9 @@
 
 Monorepo for skill-driven, agentic React performance profiling and optimization.
 
-## Start Here: Skill + Agent Profiling Workflow
+## Start Here: End-to-End Agent Workflow
 
-This is the primary workflow for this repository.
+This is the primary workflow for this repository, including everything the agent should do from app startup through verified optimization.
 
 ### 1) Prepare environment
 
@@ -14,14 +14,14 @@ cd react-profiler-optimize
 git submodule update --init --recursive
 ```
 
-Install dependencies for the app you want to profile and the MCP tool:
+Install dependencies for the app you want to profile and the profiler MCP tool:
 
 ```bash
 cd apps/next-react-profiler-lab && yarn install
 cd ../../tools/react-profiler-mcp && yarn install
 ```
 
-### 2) Run target app
+### 2) Run target app and confirm readiness
 
 Next lab:
 
@@ -38,7 +38,15 @@ npm install
 npm run web
 ```
 
-### 3) Run profiler MCP server (tool side)
+When running the app, the agent should:
+
+1. Wait for the dev server to become reachable.
+2. Open the target route in Chrome Devtools MCP.
+3. Confirm page readiness (selector/text/URL) before recording.
+
+### 3) Start profiling tool servers
+
+Run React profiling MCP (record/analyze/compare):
 
 In another terminal:
 
@@ -47,7 +55,11 @@ cd tools/react-profiler-mcp
 node packages/mcp-server/index.js
 ```
 
-### 4) Use the packaged skill in your coding agent
+Optional but recommended for browser-level trace scouting:
+
+- Start `chrome-devtools-mcp` in your agent client to enable navigation, interaction replay, and Chrome Performance traces.
+
+### 4) Invoke the packaged skill in your coding agent
 
 Canonical skill lives in:
 
@@ -63,16 +75,34 @@ Capture baseline, analyze hotspots, apply a targeted fix, re-profile,
 and produce before/after deltas.
 ```
 
-### 5) Expected profiling loop
+### 5) Agent execution loop (what the agent should do)
 
-1. Capture baseline profile (`record_react_devtools_profile` or CLI `record-react-devtools`).
-2. Analyze baseline (`analyze_profile` / CLI `analyze`).
-3. Apply one targeted fix class.
-4. Capture optimized profile with the same deterministic steps.
-5. Compare reports (`compare_profile_reports` or `compare_profiles_end_to_end`).
-6. Summarize measurable deltas.
+1. Navigate and interact deterministically.
+2. Run a baseline Chrome trace (if `chrome-devtools-mcp` is connected) to prove a real perf issue and cadence.
+3. Run a baseline React DevTools export capture with `record_react_devtools_profile`.
+4. Analyze the baseline export (`analyze_profile`) and rank hotspots.
+5. Narrow to concrete files/components using commit-level evidence and render reasons.
+6. Apply a minimal fix to one class of issue at a time.
+7. Re-run the exact same interaction sequence.
+8. Capture optimized profile and compare (`compare_profile_reports` or `compare_profiles_end_to_end`).
+9. Report measurable deltas and any residual risks.
 
-### 6) CLI fallback workflow (without MCP client wiring)
+### 6) Typical hotspot-to-code narrowing flow
+
+1. Start from `commits[*].flamegraph.nodes[*]` and `whyRendered`.
+2. Cross-check recurring components in `reactTracks.topComponentCounts` and cadence.
+3. Map to source files in `apps/*` (usually provider, memo boundary, or expensive child component).
+4. Patch only the minimal lines required for the targeted footgun.
+
+### 7) Suggested artifact naming
+
+1. `profiles/baseline-<flow>.json`
+2. `reports/baseline-<flow>.report.json`
+3. `profiles/optimized-<flow>.json`
+4. `reports/optimized-<flow>.report.json`
+5. `reports/<flow>.diff.json`
+
+### 8) CLI fallback workflow (without MCP client wiring)
 
 ```bash
 cd tools/react-profiler-mcp
@@ -84,6 +114,12 @@ node packages/cli/bin/react-profiler-cli.js record-react-devtools \
 node packages/cli/bin/react-profiler-cli.js analyze \
   --input /tmp/baseline.json \
   --out /tmp/baseline-report.json \
+  --source-root ../../apps/next-react-profiler-lab
+
+node packages/cli/bin/react-profiler-cli.js compare-profiles \
+  --before-profile /tmp/baseline.json \
+  --after-profile /tmp/optimized.json \
+  --out /tmp/compare.json \
   --source-root ../../apps/next-react-profiler-lab
 ```
 
