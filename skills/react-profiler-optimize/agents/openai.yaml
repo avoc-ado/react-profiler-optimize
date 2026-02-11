@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Profiler Optimize"
+  short_description: "Profile React renders and fix rerender bottlenecks"
+  default_prompt: "Use $react-profiler-optimize to profile this React app, identify rerender hotspots, apply fixes, and validate improvements."

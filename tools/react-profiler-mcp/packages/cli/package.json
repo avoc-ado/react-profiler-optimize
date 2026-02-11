@@ -1,0 +1,12 @@
+{
+  "name": "@react-profiler-mcp/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@react-profiler-mcp/core": "0.1.0"
+  },
+  "bin": {
+    "react-profiler-cli": "./bin/react-profiler-cli.js"
+  }
+}

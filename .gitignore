@@ -1,1 +1,22 @@
-.git
+.DS_Store
+
+# Local editing workspace and notes
+.skill-edit/
+chat.md
+
+# Dependencies and build caches
+**/node_modules/
+apps/next-react-profiler-lab/.next/
+apps/next-react-profiler-lab/out/
+apps/expo-react-profiler-lab/.expo/
+apps/expo-react-profiler-lab/dist/
+apps/expo-react-profiler-lab/web-build/
+
+# Generated profiling artifacts
+apps/next-react-profiler-lab/profiles/
+apps/expo-react-profiler-lab/profiles/
+tools/react-profiler-mcp/profiles/
+tools/react-profiler-mcp/reports/
+
+# Logs
+*.log

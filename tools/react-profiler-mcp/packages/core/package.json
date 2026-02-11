@@ -1,0 +1,17 @@
+{
+  "name": "@react-profiler-mcp/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": "./src/index.js",
+  "dependencies": {
+    "@babel/parser": "^7.29.0",
+    "@babel/traverse": "^7.29.0",
+    "@jridgewell/sourcemap-codec": "^1.5.5",
+    "puppeteer-core": "^24.37.2",
+    "react-devtools-core": "^7.0.1",
+    "source-map-js": "^1.2.1",
+    "ws": "^8.19.0"
+  }
+}
